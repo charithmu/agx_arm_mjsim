@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="piper">
+
+  <xacro:arg name="initial_positions_file"
+             default="$(find agx_arm_mjsim)/config/initial_positions.yaml"/>
+  <xacro:arg name="headless" default="false"/>
+
+  <!-- Kinematics, visuals, collisions (same as gzsim – no sim plugin blocks here) -->
+  <xacro:include
+    filename="$(find agx_arm_description)/agx_arm_urdf/piper/urdf/piper_with_gripper_description.xacro"/>
+
+  <!-- ros2_control hardware block (MujocoSystemInterface) -->
+  <xacro:include filename="$(find agx_arm_mjsim)/urdf/piper_mjsim.ros2_control.xacro"/>
+  <xacro:piper_ros2_control
+    name="MujocoSystem"
+    initial_positions_file="$(arg initial_positions_file)"
+    headless="$(arg headless)"/>
+
+</robot>

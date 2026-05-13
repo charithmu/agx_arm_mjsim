@@ -1,0 +1,11 @@
+# initial_positions.yaml for MuJoCo sim.
+# Values match the 'home' keyframe defined in mjcf/piper.xml so the
+# controller_manager and the physics start at the same configuration.
+initial_positions:
+  joint1: 0.0
+  joint2: 1.57
+  joint3: -1.3485
+  joint4: 0.0
+  joint5: 0.0
+  joint6: 0.0
+  gripper_joint1: 0.0
