@@ -12,6 +12,7 @@ Usage
   ros2 launch agx_arm_mjsim piper_with_gripper_moveit_mjsim.launch.py headless:=true
 """
 
+import ast
 import sys
 import yaml
 from pathlib import Path
@@ -40,6 +41,9 @@ from launch_ros.substitutions import FindPackageShare
 def _launch_moveit(context):
     pkg_mjsim = get_package_share_directory("agx_arm_mjsim")
     pkg_moveit = get_package_share_directory("agx_arm_moveit")
+    tcp_offset = ast.literal_eval(LaunchConfiguration("tcp_offset").perform(context))
+    tcp_offset_xyz = f"{tcp_offset[0]} {tcp_offset[1]} {tcp_offset[2]}"
+    tcp_offset_rpy = f"{tcp_offset[3]} {tcp_offset[4]} {tcp_offset[5]}"
 
     # All MoveIt config (SRDF, kinematics, planning pipelines, joint limits)
     # comes from agx_arm_moveit via the shared builder – no duplication here.
@@ -58,7 +62,7 @@ def _launch_moveit(context):
             {
                 "use_sim_time": True,
                 # Joints that settle just outside their limit boundary are still valid.
-                "start_state_max_bounds_error": 0.1,
+                "start_state_max_bounds_error": 0.01,
             },
         ],
     )
@@ -79,7 +83,27 @@ def _launch_moveit(context):
         ],
     )
 
-    return [move_group_node, rviz_node]
+    sim_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare("agx_arm_mjsim"),
+                        "launch",
+                        "piper_with_gripper_mjsim.launch.py",
+                    ]
+                )
+            ]
+        ),
+        launch_arguments={
+            "use_rviz": "false",
+            "headless": LaunchConfiguration("headless"),
+            "tcp_offset_xyz": tcp_offset_xyz,
+            "tcp_offset_rpy": tcp_offset_rpy,
+        }.items(),
+    )
+
+    return [sim_launch, move_group_node, rviz_node]
 
 
 def generate_launch_description():
@@ -91,30 +115,13 @@ def generate_launch_description():
             DeclareLaunchArgument("revo2_type", default_value="left"),
             DeclareLaunchArgument(
                 "tcp_offset",
-                default_value="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]",
-                description="TCP offset [x, y, z, rx, ry, rz] in metres/radians.",
+                default_value="[0.0, 0.0, 0.1358, 0.0, 0.0, 0.0]",
+                description="TCP offset [x, y, z, rx, ry, rz] in metres/radians. Defaults to the midpoint between the gripper jaws.",
             ),
             DeclareLaunchArgument(
                 "headless",
                 default_value="false",
                 description="Run MuJoCo without GUI window.",
-            ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    [
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("agx_arm_mjsim"),
-                                "launch",
-                                "piper_with_gripper_mjsim.launch.py",
-                            ]
-                        )
-                    ]
-                ),
-                launch_arguments={
-                    "use_rviz": "false",
-                    "headless": LaunchConfiguration("headless"),
-                }.items(),
             ),
             OpaqueFunction(function=_launch_moveit),
         ]

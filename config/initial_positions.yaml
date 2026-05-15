@@ -1,6 +1,13 @@
-# initial_positions.yaml for MuJoCo sim.
-# Values match the 'home' keyframe defined in mjcf/piper.xml so the
-# controller_manager and the physics start at the same configuration.
+# Keep startup positions strictly inside the URDF joint limits.
+# MuJoCo home pose matches the 'home' keyframe in mjcf/piper.xml.
+# URDF joint limits:
+# - joint1: [-2.618,  2.618] rad
+# - joint2: [ 0.000,  3.142] rad  (1.57 is at centre, safely inside)
+# - joint3: [-2.967,  0.000] rad  (-1.3485 is near centre, safely inside)
+# - joint4: [-1.745,  1.745] rad
+# - joint5: [-1.222,  1.222] rad
+# - joint6: [-2.094,  2.094] rad
+# - gripper_joint1: [ 0.000,  0.050] m  fix: 0.0 is on lower bound, use +offset
 initial_positions:
   joint1: 0.0
   joint2: 1.57
@@ -8,4 +15,4 @@ initial_positions:
   joint4: 0.0
   joint5: 0.0
   joint6: 0.0
-  gripper_joint1: 0.0
+  gripper_joint1: 0.001

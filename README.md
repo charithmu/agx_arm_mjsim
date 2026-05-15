@@ -40,6 +40,8 @@ ros2 launch agx_arm_mjsim piper_with_gripper_mjsim.launch.py
 Optional arguments:
 - `use_rviz:=false` — skip RViz
 - `headless:=true` — run MuJoCo without the physics GUI window (CI / servers)
+- `tcp_offset_xyz:="0 0 0.1358"` — publish `tcp_link` in TF at a fixed offset from `gripper_base`
+- `tcp_offset_rpy:="0 0 0"` — rotate the published `tcp_link` frame if needed
 
 MuJoCo keyboard shortcuts in the physics window:
 - **Space** — pause / resume
@@ -58,6 +60,7 @@ In RViz use the **MotionPlanning** panel to plan and execute trajectories for th
 
 Optional arguments:
 - `headless:=true` — suppress MuJoCo GUI
+- `tcp_offset:="[0.0, 0.0, 0.1358, 0.0, 0.0, 0.0]"` — MoveIt TCP offset `[x, y, z, rx, ry, rz]`; defaults to the midpoint between the gripper jaws
 
 ## Architecture
 
@@ -110,7 +113,8 @@ The upstream MuJoCo Menagerie model was modified as follows:
 
 ## Notes
 
-- **Initial positions**: `joint2=1.57`, `joint3=-1.3485` match the MJCF `home` keyframe exactly so the robot holds its pose without a jerk at startup.
+- **Initial positions**: `joint2=1.57`, `joint3=-1.3485` match the MJCF `home` keyframe. All joint start positions are placed slightly inside their URDF limit boundaries to avoid MoveIt `CheckStartStateBounds` rejections.
+- **tcp_link**: always present in TF, parented to `gripper_base`, default offset `[0, 0, 0.1358]` (midpoint between gripper jaws). MoveIt plans to this frame.
 - **MuJoCo sim services** (provided by `mujoco_ros2_control`):
   ```bash
   ros2 service call /mujoco_ros2_control_node/reset_world    mujoco_ros2_control_msgs/srv/ResetWorld    "{}"

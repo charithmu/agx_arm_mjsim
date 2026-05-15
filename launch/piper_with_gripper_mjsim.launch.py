@@ -48,6 +48,16 @@ def generate_launch_description():
         default_value="false",
         description="Run MuJoCo without GUI window (useful for CI/headless servers)",
     )
+    declare_tcp_offset_xyz = DeclareLaunchArgument(
+        "tcp_offset_xyz",
+        default_value="0 0 0.1358",
+        description="TCP translation [x y z] from gripper_base in metres.",
+    )
+    declare_tcp_offset_rpy = DeclareLaunchArgument(
+        "tcp_offset_rpy",
+        default_value="0 0 0",
+        description="TCP rotation [r p y] from gripper_base in radians.",
+    )
 
     robot_description_content = Command(
         [
@@ -62,6 +72,12 @@ def generate_launch_description():
             ),
             " headless:=",
             LaunchConfiguration("headless"),
+            " tcp_offset_xyz:='",
+            LaunchConfiguration("tcp_offset_xyz"),
+            "'",
+            " tcp_offset_rpy:='",
+            LaunchConfiguration("tcp_offset_rpy"),
+            "'",
         ]
     )
     robot_description = {
@@ -141,6 +157,8 @@ def generate_launch_description():
         [
             declare_use_rviz,
             declare_headless,
+            declare_tcp_offset_xyz,
+            declare_tcp_offset_rpy,
             rsp_node,
             control_node,
             delayed_jsb,
